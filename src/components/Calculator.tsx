@@ -1,0 +1,361 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+type WeeklyOption = 4 | 8 | 12 | 16 | 20;
+type MonthlyOption = 30 | 60 | 90;
+
+export default function Calculator() {
+  const [iPhonePrice, setIPhonePrice] = useState<string>('');
+  const [downPayment, setDownPayment] = useState<string>('');
+  const [interestRate, setInterestRate] = useState<string>('');
+  const [selectedWeekly, setSelectedWeekly] = useState<WeeklyOption | null>(null);
+  const [selectedMonthly, setSelectedMonthly] = useState<MonthlyOption | null>(null);
+  const [customWeeks, setCustomWeeks] = useState<string>('');
+  const [customMonths, setCustomMonths] = useState<string>('');
+  
+  const [calculatedDownPayment, setCalculatedDownPayment] = useState<number>(0);
+  const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
+  const [totalMonths, setTotalMonths] = useState<number>(0);
+
+  // 计算首付金额和月供
+  useEffect(() => {
+    const price = parseFloat(iPhonePrice) || 0;
+    const dpAmount = parseFloat(downPayment) || 0;
+    const rate = parseFloat(interestRate) || 0;
+    
+    let dp = 0;
+    let remaining = 0;
+    
+    // 如果用户填写了DIY Down Payment，使用用户填写的金额
+    if (dpAmount > 0) {
+      dp = dpAmount;
+    } else if (price > 0) {
+      // 否则默认为总价的40%
+      dp = price * 0.4;
+    }
+    
+    setCalculatedDownPayment(dp);
+    remaining = price - dp;
+
+    // 获取实际的周数或月数（优先使用自定义值）
+    const actualWeeks = customWeeks ? parseFloat(customWeeks) : selectedWeekly;
+    const actualDays = customMonths ? parseFloat(customMonths) * 30 : selectedMonthly;
+
+    if (actualWeeks) {
+      // 按周计算：总周数，每周支付金额（含利息）
+      const months = actualWeeks / 4;
+      const monthlyRate = rate / 100 / 12; // 月利率
+      
+      if (monthlyRate > 0) {
+        // 等额本息计算
+        const monthlyPaymentAmount = remaining * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+        setMonthlyPayment(monthlyPaymentAmount);
+      } else {
+        // 无利息
+        setMonthlyPayment(remaining / months);
+      }
+      setTotalMonths(months);
+    } else if (actualDays) {
+      // 按天计算：转换为月数（含利息）
+      const months = actualDays / 30;
+      const monthlyRate = rate / 100 / 12; // 月利率
+      
+      if (monthlyRate > 0) {
+        // 等额本息计算
+        const monthlyPaymentAmount = remaining * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+        setMonthlyPayment(monthlyPaymentAmount);
+      } else {
+        // 无利息
+        setMonthlyPayment(remaining / months);
+      }
+      setTotalMonths(months);
+    } else {
+      setMonthlyPayment(0);
+      setTotalMonths(0);
+    }
+  }, [iPhonePrice, downPayment, interestRate, selectedWeekly, selectedMonthly, customWeeks, customMonths]);
+
+  const handleWeeklySelect = (weeks: WeeklyOption) => {
+    setSelectedWeekly(weeks);
+    setSelectedMonthly(null);
+    setCustomWeeks('');
+    setCustomMonths('');
+  };
+
+  const handleMonthlySelect = (days: MonthlyOption) => {
+    setSelectedMonthly(days);
+    setSelectedWeekly(null);
+    setCustomWeeks('');
+    setCustomMonths('');
+  };
+
+  const handleCustomWeeksChange = (value: string) => {
+    setCustomWeeks(value);
+    setSelectedWeekly(null);
+    setSelectedMonthly(null);
+    setCustomMonths('');
+  };
+
+  const handleCustomMonthsChange = (value: string) => {
+    setCustomMonths(value);
+    setSelectedWeekly(null);
+    setSelectedMonthly(null);
+    setCustomWeeks('');
+  };
+
+  const weeklyOptions: { value: WeeklyOption; label: string; color: string }[] = [
+    { value: 4, label: '4 weeks', color: 'bg-blue-100 border-blue-200' },
+    { value: 8, label: '8 weeks', color: 'bg-purple-100 border-purple-200' },
+    { value: 12, label: '12 weeks', color: 'bg-pink-100 border-pink-200' },
+    { value: 16, label: '16 weeks', color: 'bg-orange-100 border-orange-200' },
+    { value: 20, label: '20 weeks', color: 'bg-green-100 border-green-200' },
+  ];
+
+  const monthlyOptions: { value: MonthlyOption; label: string; color: string; badge: string }[] = [
+    { value: 30, label: '30 days (1 Month)', color: 'bg-blue-100 border-blue-200', badge: 'C' },
+    { value: 60, label: '60 days (2 Months)', color: 'bg-purple-100 border-purple-200', badge: 'H' },
+    { value: 90, label: '90 days (3 Months)', color: 'bg-red-100 border-red-300', badge: 'I' },
+  ];
+
+  return (
+    <div className="w-full max-w-3xl mx-auto p-8 bg-white rounded-lg">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">
+        Calculator <span className="text-gray-500">(LG)</span>
+      </h1>
+
+      {/* iPhone Price Input */}
+      <div className="mb-6">
+        <label className="block text-base font-medium text-gray-700 mb-2">
+          iPhone Price <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={iPhonePrice}
+          onChange={(e) => {
+            const value = e.target.value;
+            // 只允许数字和小数点
+            if (value === '' || /^\d*\.?\d*$/.test(value)) {
+              setIPhonePrice(value);
+            }
+          }}
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder=""
+        />
+      </div>
+
+      {/* Interest Rate Input */}
+      <div className="mb-6">
+        <label className="block text-base font-medium text-gray-700 mb-2">
+          Interest Rate (%) <span className="text-red-500">*</span>
+        </label>
+        <div className="space-y-3">
+          <input
+            type="text"
+            value={interestRate}
+            onChange={(e) => {
+              const value = e.target.value;
+              // 只允许数字和小数点
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                setInterestRate(value);
+              }
+            }}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Enter interest rate or select below"
+          />
+          <div className="flex flex-wrap gap-2">
+            {[0, 5, 10, 15, 20].map((rate) => (
+              <button
+                key={rate}
+                onClick={() => setInterestRate(rate.toString())}
+                className={`px-4 py-2 rounded-lg border-2 transition-all ${
+                  interestRate === rate.toString()
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:border-blue-300'
+                }`}
+              >
+                {rate}%
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* DIY Down Payment Input */}
+      <div className="mb-6">
+        <label className="block text-base font-medium text-gray-700 mb-2">
+          DIY Down Payment <span className="text-red-500">*</span>
+        </label>
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">@</span>
+          <input
+            type="text"
+            value={downPayment}
+            onChange={(e) => {
+              const value = e.target.value;
+              // 只允许数字和小数点
+              if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                setDownPayment(value);
+              }
+            }}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder=""
+          />
+        </div>
+      </div>
+
+      {/* Down Payment Display */}
+      <div className="mb-8">
+        <p className="text-base text-gray-700">
+          <span className="font-bold">Down Payment is </span>
+          <span className="inline-block min-w-[100px] border-b border-gray-300 px-2 py-1 font-bold text-red-500">
+            {calculatedDownPayment > 0 ? calculatedDownPayment.toFixed(2) : ''}
+          </span>
+        </p>
+      </div>
+
+      {/* Weekly Payment Options */}
+      <div className="mb-8">
+        <h2 className="text-base font-semibold text-gray-800 mb-4">1、Weekly Payment：</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {weeklyOptions.map((option, index) => (
+            <button
+              key={option.value}
+              onClick={() => handleWeeklySelect(option.value)}
+              className={`
+                flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all
+                ${selectedWeekly === option.value 
+                  ? 'ring-2 ring-blue-500 ring-offset-2' 
+                  : ''
+                }
+                ${option.color}
+              `}
+            >
+              <span className={`
+                flex items-center justify-center w-6 h-6 rounded text-xs font-bold text-white
+                ${option.value === 4 ? 'bg-blue-500' : ''}
+                ${option.value === 8 ? 'bg-purple-500' : ''}
+                ${option.value === 12 ? 'bg-pink-500' : ''}
+                ${option.value === 16 ? 'bg-orange-500' : ''}
+                ${option.value === 20 ? 'bg-green-500' : ''}
+              `}>
+                {String.fromCharCode(65 + index)}
+              </span>
+              <span className="text-sm font-medium text-gray-700">{option.label}</span>
+            </button>
+          ))}
+          {/* Custom Weeks Input */}
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">Custom Weeks:</label>
+            <input
+              type="text"
+              value={customWeeks}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  handleCustomWeeksChange(value);
+                }
+              }}
+              className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                customWeeks ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-2' : 'border-gray-300'
+              }`}
+              placeholder="Enter custom number of weeks"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Payment Options */}
+      <div className="mb-8">
+        <h2 className="text-base font-semibold text-gray-800 mb-4">2、Monthly Payment：</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {monthlyOptions.map((option) => (
+            <button
+              key={option.value}
+              onClick={() => handleMonthlySelect(option.value)}
+              className={`
+                flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all
+                ${selectedMonthly === option.value 
+                  ? 'ring-2 ring-blue-500 ring-offset-2' 
+                  : ''
+                }
+                ${option.color}
+              `}
+            >
+              <span className={`
+                flex items-center justify-center w-6 h-6 rounded text-xs font-bold text-white
+                ${option.value === 30 ? 'bg-blue-500' : ''}
+                ${option.value === 60 ? 'bg-purple-500' : ''}
+                ${option.value === 90 ? 'bg-red-500' : ''}
+              `}>
+                {option.badge}
+              </span>
+              <span className="text-sm font-medium text-gray-700">{option.label}</span>
+            </button>
+          ))}
+          {/* Custom Months Input */}
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-600 mb-2">Custom Months:</label>
+            <input
+              type="text"
+              value={customMonths}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  handleCustomMonthsChange(value);
+                }
+              }}
+              className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                customMonths ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-2' : 'border-gray-300'
+              }`}
+              placeholder="Enter custom number of months"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Monthly Payment Display */}
+      <div className="mb-8">
+        <p className="text-base text-gray-700">
+          {(selectedWeekly || customWeeks) ? (
+            <>
+              <span className="font-bold">Weekly Payment is </span>
+              <span className="inline-block min-w-[100px] border-b border-gray-300 px-2 py-1 font-bold text-red-500">
+                {monthlyPayment > 0 ? (monthlyPayment / 4).toFixed(2) : ''}
+              </span>
+              <span className="font-bold"> per Week，for </span>
+              <span className="font-bold text-red-500">
+                {customWeeks || selectedWeekly || ''}
+              </span>
+              <span className="font-bold"> Weeks</span>
+            </>
+          ) : (selectedMonthly || customMonths) ? (
+            <>
+              <span className="font-bold">Monthly Payment is </span>
+              <span className="inline-block min-w-[100px] border-b border-gray-300 px-2 py-1 font-bold text-red-500">
+                {monthlyPayment > 0 ? monthlyPayment.toFixed(2) : ''}
+              </span>
+              <span className="font-bold"> per Month，for </span>
+              <span className="font-bold text-red-500">
+                {customMonths || totalMonths > 0 ? (customMonths || totalMonths) : ''}
+              </span>
+              <span className="font-bold"> Months</span>
+            </>
+          ) : (
+            <>
+              <span className="font-bold">Monthly Payment is </span>
+              <span className="inline-block min-w-[100px] border-b border-gray-300 px-2 py-1 font-bold text-red-500">
+                
+              </span>
+              <span className="font-bold"> per Month，for </span>
+              <span className="font-bold text-red-500">
+                
+              </span>
+              <span className="font-bold"> Months</span>
+            </>
+          )}
+        </p>
+      </div>
+    </div>
+  );
+}
