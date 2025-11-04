@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 type WeeklyOption = 4 | 8 | 12 | 16 | 20;
 type MonthlyOption = 30 | 60 | 90;
@@ -17,6 +17,14 @@ export default function Calculator() {
   const [calculatedDownPayment, setCalculatedDownPayment] = useState<number>(0);
   const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
   const [totalMonths, setTotalMonths] = useState<number>(0);
+
+  // 计算滑块背景样式
+  const sliderStyle = useMemo(() => {
+    const percentage = ((parseFloat(interestRate) || 0) / 30) * 100;
+    return {
+      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`
+    };
+  }, [interestRate]);
 
   // 计算首付金额和月供
   useEffect(() => {
@@ -150,26 +158,52 @@ export default function Calculator() {
           Interest Rate (%) <span className="text-red-500">*</span>
         </label>
         <div className="space-y-3">
-          <input
-            type="text"
-            value={interestRate}
-            onChange={(e) => {
-              const value = e.target.value;
-              // 只允许数字和小数点
-              if (value === '' || /^\d*\.?\d*$/.test(value)) {
-                setInterestRate(value);
-              }
-            }}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter interest rate or select below"
-          />
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={interestRate}
+              onChange={(e) => {
+                const value = e.target.value;
+                // 只允许数字和小数点
+                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                  setInterestRate(value);
+                }
+              }}
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter interest rate"
+            />
+            <span className="text-lg font-semibold text-gray-700 min-w-[60px]">
+              {interestRate || '0'}%
+            </span>
+          </div>
+          
+          {/* Slider */}
+          <div className="px-2">
+            <input
+              type="range"
+              min="0"
+              max="30"
+              step="0.1"
+              value={interestRate || '0'}
+              onChange={(e) => setInterestRate(e.target.value)}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              style={sliderStyle}
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0%</span>
+              <span>15%</span>
+              <span>30%</span>
+            </div>
+          </div>
+          
+          {/* Quick Select Buttons */}
           <div className="flex flex-wrap gap-2">
-            {[0, 5, 10, 15, 20].map((rate) => (
+            {[0, 2.5, 5, 7.5, 10, 12.5, 15, 20].map((rate) => (
               <button
                 key={rate}
                 onClick={() => setInterestRate(rate.toString())}
-                className={`px-4 py-2 rounded-lg border-2 transition-all ${
-                  interestRate === rate.toString()
+                className={`px-3 py-1.5 rounded-lg border-2 transition-all text-sm ${
+                  parseFloat(interestRate) === rate
                     ? 'bg-blue-500 text-white border-blue-500'
                     : 'bg-gray-100 text-gray-700 border-gray-300 hover:border-blue-300'
                 }`}
