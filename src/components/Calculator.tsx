@@ -51,32 +51,18 @@ export default function Calculator() {
     const actualDays = customMonths ? parseFloat(customMonths) * 30 : selectedMonthly;
 
     if (actualWeeks) {
-      // 按周计算：总周数，每周支付金额（含利息）
+      // 按周计算：(总金额 - 首付) * (1 + 利息率) / 周数
+      const totalWithInterest = remaining * (1 + rate / 100);
+      const weeklyPayment = totalWithInterest / actualWeeks;
       const months = actualWeeks / 4;
-      const monthlyRate = rate / 100 / 12; // 月利率
-      
-      if (monthlyRate > 0) {
-        // 等额本息计算
-        const monthlyPaymentAmount = remaining * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
-        setMonthlyPayment(monthlyPaymentAmount);
-      } else {
-        // 无利息
-        setMonthlyPayment(remaining / months);
-      }
+      setMonthlyPayment(weeklyPayment * 4); // 转换为月供显示
       setTotalMonths(months);
     } else if (actualDays) {
-      // 按天计算：转换为月数（含利息）
+      // 按月计算：(总金额 - 首付) * (1 + 利息率) / 月数
       const months = actualDays / 30;
-      const monthlyRate = rate / 100 / 12; // 月利率
-      
-      if (monthlyRate > 0) {
-        // 等额本息计算
-        const monthlyPaymentAmount = remaining * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
-        setMonthlyPayment(monthlyPaymentAmount);
-      } else {
-        // 无利息
-        setMonthlyPayment(remaining / months);
-      }
+      const totalWithInterest = remaining * (1 + rate / 100);
+      const monthlyPaymentAmount = totalWithInterest / months;
+      setMonthlyPayment(monthlyPaymentAmount);
       setTotalMonths(months);
     } else {
       setMonthlyPayment(0);
