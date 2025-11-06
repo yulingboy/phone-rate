@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 type WeeklyOption = 4 | 8 | 12 | 16 | 20;
 type MonthlyOption = 30 | 60 | 90;
@@ -17,14 +17,6 @@ export default function Calculator() {
   const [calculatedDownPayment, setCalculatedDownPayment] = useState<number>(0);
   const [monthlyPayment, setMonthlyPayment] = useState<number>(0);
   const [totalMonths, setTotalMonths] = useState<number>(0);
-
-  // 计算滑块背景样式
-  const sliderStyle = useMemo(() => {
-    const percentage = ((parseFloat(interestRate) || 0) / 30) * 100;
-    return {
-      background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${percentage}%, #e5e7eb ${percentage}%, #e5e7eb 100%)`
-    };
-  }, [interestRate]);
 
   // 计算首付金额和月供
   useEffect(() => {
@@ -113,14 +105,14 @@ export default function Calculator() {
   ];
 
   return (
-    <div className="w-full max-w-3xl mx-auto p-8 bg-white rounded-lg">
-      <h1 className="text-3xl font-bold mb-8 text-gray-800">
+    <div className="w-full max-w-3xl mx-auto p-3 md:p-6 bg-white md:rounded-lg min-h-screen md:min-h-0">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6 text-gray-800">
         Calculator <span className="text-gray-500">(LG)</span>
       </h1>
 
       {/* iPhone Price Input */}
-      <div className="mb-6">
-        <label className="block text-base font-medium text-gray-700 mb-2">
+      <div className="mb-4 md:mb-5">
+        <label className="block text-base font-medium text-gray-700 mb-1.5">
           iPhone Price <span className="text-red-500">*</span>
         </label>
         <input
@@ -139,8 +131,8 @@ export default function Calculator() {
       </div>
 
       {/* Interest Rate Input */}
-      <div className="mb-6">
-        <label className="block text-base font-medium text-gray-700 mb-2">
+      <div className="mb-4 md:mb-5">
+        <label className="block text-base font-medium text-gray-700 mb-1.5">
           Interest Rate (%) <span className="text-red-500">*</span>
         </label>
         <div className="space-y-3">
@@ -172,8 +164,10 @@ export default function Calculator() {
               step="0.1"
               value={interestRate || '0'}
               onChange={(e) => setInterestRate(e.target.value)}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500"
-              style={sliderStyle}
+              className="w-full h-2 rounded-lg appearance-none cursor-pointer"
+              style={{
+                background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${((parseFloat(interestRate) || 0) / 30) * 100}%, #e5e7eb ${((parseFloat(interestRate) || 0) / 30) * 100}%, #e5e7eb 100%)`
+              }}
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
               <span>0%</span>
@@ -202,8 +196,8 @@ export default function Calculator() {
       </div>
 
       {/* DIY Down Payment Input */}
-      <div className="mb-6">
-        <label className="block text-base font-medium text-gray-700 mb-2">
+      <div className="mb-4 md:mb-5">
+        <label className="block text-base font-medium text-gray-700 mb-1.5">
           DIY Down Payment <span className="text-red-500">*</span>
         </label>
         <div className="relative">
@@ -225,7 +219,7 @@ export default function Calculator() {
       </div>
 
       {/* Down Payment Display */}
-      <div className="mb-8">
+      <div className="mb-5 md:mb-6">
         <p className="text-base text-gray-700">
           <span className="font-bold">Down Payment is </span>
           <span className="inline-block min-w-[100px] border-b border-gray-300 px-2 py-1 font-bold text-red-500">
@@ -235,9 +229,9 @@ export default function Calculator() {
       </div>
 
       {/* Weekly Payment Options */}
-      <div className="mb-8">
-        <h2 className="text-base font-semibold text-gray-800 mb-4">1、Weekly Payment：</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="mb-5 md:mb-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-3">1、Weekly Payment：</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {weeklyOptions.map((option, index) => (
             <button
               key={option.value}
@@ -286,9 +280,9 @@ export default function Calculator() {
       </div>
 
       {/* Monthly Payment Options */}
-      <div className="mb-8">
-        <h2 className="text-base font-semibold text-gray-800 mb-4">2、Monthly Payment：</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="mb-5 md:mb-6">
+        <h2 className="text-base font-semibold text-gray-800 mb-3">2、Monthly Payment：</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {monthlyOptions.map((option) => (
             <button
               key={option.value}
@@ -335,7 +329,7 @@ export default function Calculator() {
       </div>
 
       {/* Monthly Payment Display */}
-      <div className="mb-8">
+      <div className="mb-5 md:mb-6">
         <p className="text-base text-gray-700">
           {(selectedWeekly || customWeeks) ? (
             <>
