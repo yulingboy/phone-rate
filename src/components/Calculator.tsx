@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 type WeeklyOption = 4 | 8 | 12 | 16 | 20;
-type MonthlyOption = 30 | 60 | 90;
+type MonthlyOption = 30 | 60 | 90 | 120 | 150;
 
 export default function Calculator() {
   const [iPhonePrice, setIPhonePrice] = useState<string>('');
@@ -102,6 +102,8 @@ export default function Calculator() {
     { value: 30, label: '30 days (1 Month)', color: 'bg-blue-100 border-blue-200', badge: 'C' },
     { value: 60, label: '60 days (2 Months)', color: 'bg-purple-100 border-purple-200', badge: 'H' },
     { value: 90, label: '90 days (3 Months)', color: 'bg-red-100 border-red-300', badge: 'I' },
+    { value: 120, label: '120 days (4 Months)', color: 'bg-yellow-100 border-yellow-200', badge: 'J' },
+    { value: 150, label: '150 days (5 Months)', color: 'bg-green-100 border-green-200', badge: 'K' },
   ];
 
   return (
@@ -301,6 +303,8 @@ export default function Calculator() {
                 ${option.value === 30 ? 'bg-blue-500' : ''}
                 ${option.value === 60 ? 'bg-purple-500' : ''}
                 ${option.value === 90 ? 'bg-red-500' : ''}
+                ${option.value === 120 ? 'bg-yellow-500' : ''}
+                ${option.value === 150 ? 'bg-green-500' : ''}
               `}>
                 {option.badge}
               </span>
